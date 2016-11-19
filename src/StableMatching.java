@@ -9,46 +9,34 @@ public class StableMatching implements StableMatchingInterface {
     int[][] menPrefs,
     int[][] womenPrefs
 	) {
+		if(n <= 0)
+			return new int[0];
+
 		ArrayBlockingQueue<Integer> freeMens = new ArrayBlockingQueue<Integer>(n);
 		int[] nextWomenToAsk = new int[n];
 		int[] askedMens = new int[n];
+
+		int[][] invWomenPrefs = new int[n][n];
 
 		for(int i=0; i< n; i++) {
 			freeMens.add(i);
 			nextWomenToAsk[i] = 0;
 			askedMens[i] = n;
+			for(int j=0; j< n; j++) {
+				invWomenPrefs[i][womenPrefs[i][j]] = j;
+			}
 		}
 			
 		while(freeMens.size() > 0) {
 			int m = freeMens.peek();
 			int wA = menPrefs[m][nextWomenToAsk[m]];
 
-
-			boolean wAandMGotEngaged;
-			if(askedMens[wA] > n/2) {
-				wAandMGotEngaged = true;
-				for(int i=askedMens[wA]; i< n; i++) {
-					if(womenPrefs[wA][i] == m) {
-						wAandMGotEngaged = false;
-						break;
-					}
-				}	
-			} else {
-				wAandMGotEngaged = false;
-				for(int i=0; i< askedMens[wA]; i++) {
-					if(womenPrefs[wA][i] == m) {
-						wAandMGotEngaged = true;
-						break;
-					}
-				}	
-			}
-
-			if(wAandMGotEngaged) {
+			if(invWomenPrefs[wA][m] < askedMens[wA]) {
 				freeMens.poll();
 				if(askedMens[wA] < n) {
 					freeMens.add(womenPrefs[wA][askedMens[wA]]);
 				}
-				askedMens[wA] = womenPrefs[wA][m];
+				askedMens[wA] = invWomenPrefs[wA][m];
 			}
 				
 			nextWomenToAsk[m] = nextWomenToAsk[m] + 1;
